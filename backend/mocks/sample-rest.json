@@ -1,0 +1,16 @@
+{
+  "user_id": "USER456",
+  "msisdn": "34987654321",
+  "usage": {
+    "data_usage": 2500,
+    "timestamp": "2025-11-06T15:30:45Z"
+  },
+  "network": {
+    "name": "Telefónica",
+    "country_code": "ES"
+  },
+  "billing_period": {
+    "start": "2025-11-01",
+    "end": "2025-11-30"
+  }
+}
