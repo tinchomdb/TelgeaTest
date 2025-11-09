@@ -43,11 +43,11 @@ The original requirements presented conflicting signals about the integration be
 
 Requirement: "Your task is to create a **simple Angular app** that takes the data you produced in the backend test (SOAP XML and REST JSON), normalizes it to Telgea’s internal format, validates it, and displays the result"
 
-**This statement is very confusing and ambiguous**
+**This statement is confusing and ambiguous**
 
 - "Takes the data you produced" suggest the backend output should feed the frontend. But the "produced" data is not the SOAP XML and REST JSON. It would be the internal normalized data.
-- Why would the frontend normalize something that is already normalized from the backend?
-- It's possible it means to reuse mock files, but it could have been worded better to avoid this confusion.
+- But why would the frontend normalize something that is already normalized from the backend?
+- My assumption is that it's possible it means to reuse mock files, but it could have been worded better to avoid this confusion. Also, in real life this could be solved easily with a quick clarification.
 
 **Interpretation:** Independent Client-side normalization tool
 
@@ -78,6 +78,7 @@ B- Full Stack API and Frontend that calls backend (Recommended for production)
   - `POST /api/normalize/soap` - Normalize SOAP XML charges
   - `POST /api/normalize/rest` - Normalize REST JSON usage data
   - `GET /health` - Health check
+  - The endpoints can be manually tested with a postman collection file I added to the root folder
 - **Features:**
   - Type-safe parsing and validation
   - Error handling with meaningful HTTP status codes
@@ -152,10 +153,11 @@ Maybe it's just a detail in the order of the actions, but I need to challenge th
 **Interpretation:**
 This requirement suggests implementing runtime validation of the **normalized output** against expected results in the UI.
 
-However, this doesn't align with best practices. Visual comparison of normalized output against expected output serves no practical purpose in production—if input is invalid, no output should be produced. Runtime output validation is an anti-pattern; such comparisons belong in automated tests, not production code.
+However, this doesn't align with best practices. In my opinion, visual comparison of normalized output against expected output serves no practical purpose. If input is invalid, no output should be produced, so it wouldn't make sense to implement in my approach to the solution, because we don't get any outputs if the inputs are invalid. Such comparisons belong in automated tests.
 
 **Decision:**
-This requirement is satisfied by automated tests (`normalizer.service.spec.ts` with test cases covering valid and invalid scenarios), not as a UI feature. I consciously chose **not** to implement runtime output comparison in the interface.
+This requirement is satisfied by automated tests (`normalizer.service.spec.ts` with test cases covering valid and invalid scenarios), not as a UI feature.
+I consciously chose **not** to implement runtime output comparison in the interface.
 
 **If the Requirement Meant Something Else:**
 
