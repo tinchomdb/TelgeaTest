@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { MVNORestResponse } from '../models/mvno-rest.dto';
 import { ValidationService } from './validation.service';
+import { VALIDATION_ERRORS } from '../constants/validation-errors';
 
 @Injectable({
   providedIn: 'root',
@@ -9,38 +10,33 @@ export class RestParserService {
   private validator = inject(ValidationService);
 
   validateRESTDataUsage(data: unknown): MVNORestResponse {
-    if (!this.isValidRESTDataResponse(data)) {
-      throw new Error(
-        'Invalid REST response structure: missing required fields (user_id, msisdn, usage, network)'
-      );
+    if (!this.isObject(data)) {
+      throw new Error(VALIDATION_ERRORS.REST_INVALID_OBJECT);
     }
-    return data as MVNORestResponse;
-  }
-
-  private isValidRESTDataResponse(data: unknown): data is MVNORestResponse {
-    if (!this.isObject(data)) return false;
 
     const obj = data as Record<string, unknown>;
 
-    if (!this.hasRequiredTopLevelFields(obj)) return false;
-    if (!this.isValidUsageObject(obj['usage'])) return false;
-    if (!this.isValidNetworkObject(obj['network'])) return false;
+    if (!this.validator.isNonEmptyString(obj['user_id'])) {
+      throw new Error(VALIDATION_ERRORS.REST_MISSING_USER_ID);
+    }
 
-    return true;
+    if (!this.validator.isNonEmptyString(obj['msisdn'])) {
+      throw new Error(VALIDATION_ERRORS.REST_MISSING_MSISDN);
+    }
+
+    if (!this.isValidUsageObject(obj['usage'])) {
+      throw new Error(VALIDATION_ERRORS.REST_MISSING_USAGE);
+    }
+
+    if (!this.isValidNetworkObject(obj['network'])) {
+      throw new Error(VALIDATION_ERRORS.REST_MISSING_NETWORK);
+    }
+
+    return data as MVNORestResponse;
   }
 
   private isObject(data: unknown): data is object {
     return data !== null && typeof data === 'object' && !Array.isArray(data);
-  }
-
-  private hasRequiredTopLevelFields(obj: Record<string, unknown>): boolean {
-    const userId = obj['user_id'];
-    const msisdn = obj['msisdn'];
-
-    if (!this.validator.isNonEmptyString(userId)) return false;
-    if (!this.validator.isNonEmptyString(msisdn)) return false;
-
-    return true;
   }
 
   private isValidUsageObject(usage: unknown): boolean {

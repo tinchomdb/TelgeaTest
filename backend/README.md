@@ -75,24 +75,6 @@ Content-Type: application/json
 GET /health
 ```
 
-## Project Structure
-
-```
-backend/
-├── src/
-│   ├── types/              # Type definitions
-│   ├── services/           # Business logic
-│   ├── controllers/        # HTTP handlers
-│   ├── routes/             # Route definitions
-│   ├── middleware/         # Express middleware
-│   ├── utils/              # Utilities
-│   └── app.ts              # Express server
-├── mocks/                  # Sample data files
-├── tsconfig.json           # TypeScript config
-├── jest.config.js          # Jest test config
-└── package.json            # Dependencies & scripts
-```
-
 ## Design Principles
 
 - **Type Safety**: Strict TypeScript with `strict: true`

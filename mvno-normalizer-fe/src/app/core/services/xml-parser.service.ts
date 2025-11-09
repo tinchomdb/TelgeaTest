@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ParsedSoapData } from '../models/mvno-soap.dto';
 import { ValidationService } from './validation.service';
+import { VALIDATION_ERRORS } from '../constants/validation-errors';
 
 @Injectable({
   providedIn: 'root',
@@ -15,7 +16,7 @@ export class XmlParserService {
 
       const parserError = xmlDoc.querySelector('parsererror');
       if (parserError) {
-        throw new Error('Invalid XML format');
+        throw new Error(VALIDATION_ERRORS.SOAP_INVALID_XML);
       }
 
       const userId = this.getElementText(xmlDoc, 'UserID');
@@ -26,25 +27,25 @@ export class XmlParserService {
       const currency = this.getElementText(xmlDoc, 'Currency');
 
       if (!this.validator.isNonEmptyString(userId))
-        throw new Error('Missing required SOAP field: UserID');
+        throw new Error(VALIDATION_ERRORS.SOAP_MISSING_USER_ID);
       if (!this.validator.isNonEmptyString(phoneNumber))
-        throw new Error('Missing required SOAP field: PhoneNumber');
+        throw new Error(VALIDATION_ERRORS.SOAP_MISSING_PHONE);
       if (!this.validator.isNonEmptyString(messageId))
-        throw new Error('Missing required SOAP field: MessageID');
+        throw new Error(VALIDATION_ERRORS.SOAP_MISSING_MESSAGE_ID);
       if (!this.validator.isNonEmptyString(timestamp))
-        throw new Error('Missing required SOAP field: Timestamp');
+        throw new Error(VALIDATION_ERRORS.SOAP_MISSING_TIMESTAMP);
       if (!this.validator.isNonEmptyString(chargeAmountStr))
-        throw new Error('Missing required SOAP field: ChargeAmount');
+        throw new Error(VALIDATION_ERRORS.SOAP_MISSING_AMOUNT);
       if (!this.validator.isNonEmptyString(currency))
-        throw new Error('Missing required SOAP field: Currency');
+        throw new Error(VALIDATION_ERRORS.SOAP_MISSING_CURRENCY);
 
       const chargeAmount = parseFloat(chargeAmountStr!);
       if (isNaN(chargeAmount)) {
-        throw new Error('Invalid charge amount format');
+        throw new Error(VALIDATION_ERRORS.SOAP_INVALID_AMOUNT_FORMAT);
       }
 
       if (!this.validator.isNonNegative(chargeAmount)) {
-        throw new Error('Charge amount cannot be negative');
+        throw new Error(VALIDATION_ERRORS.SOAP_NEGATIVE_AMOUNT);
       }
 
       return {
