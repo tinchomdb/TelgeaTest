@@ -44,10 +44,17 @@ export class RESTParserService {
   }
 
   private isValidUsageObject(usage: unknown): boolean {
-    return this.isObject(usage);
+    if (!this.isObject(usage)) return false;
+    const usageObj = usage as RawData;
+    return this.isObject(usageObj.data) && this.isObject(usageObj.period);
   }
 
   private isValidNetworkObject(network: unknown): boolean {
-    return this.isObject(network);
+    if (!this.isObject(network)) return false;
+    const networkObj = network as RawData;
+    return (
+      typeof networkObj.type === "string" &&
+      typeof networkObj.provider_code === "string"
+    );
   }
 }

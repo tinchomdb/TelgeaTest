@@ -1,0 +1,172 @@
+{
+  "info": {
+    "_postman_id": "telgea-mvno-normalizer-collection",
+    "name": "Telgea MVNO API Tests",
+    "description": "Collection for testing MVNO data normalization API endpoints with SOAP and REST inputs",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "SOAP - Normalize SMS Charge",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"xml\": \"<soapenv:Envelope xmlns:soapenv=\\\"http://schemas.xmlsoap.org/soap/envelope/\\\" xmlns:sms=\\\"http://provider.com/sms\\\">\\n   <soapenv:Header/>\\n   <soapenv:Body>\\n      <sms:ChargeSMS>\\n         <sms:UserID>abc123</sms:UserID>\\n         <sms:PhoneNumber>+46701234567</sms:PhoneNumber>\\n         <sms:MessageID>msg789</sms:MessageID>\\n         <sms:Timestamp>2025-04-01T12:30:00Z</sms:Timestamp>\\n         <sms:ChargeAmount>0.05</sms:ChargeAmount>\\n         <sms:Currency>EUR</sms:Currency>\\n      </sms:ChargeSMS>\\n   </soapenv:Body>\\n</soapenv:Envelope>\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/normalize/soap",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "normalize", "soap"]
+        },
+        "description": "Normalizes SOAP XML data from SMS charging system into Telgea's internal format"
+      },
+      "response": []
+    },
+    {
+      "name": "REST - Normalize Data Usage",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": \"abc123\",\n  \"msisdn\": \"+46701234567\",\n  \"usage\": {\n    \"data\": {\n      \"total_mb\": 845.23,\n      \"roaming_mb\": 210.50,\n      \"country\": \"SE\"\n    },\n    \"period\": {\n      \"start\": \"2025-04-01T00:00:00Z\",\n      \"end\": \"2025-04-30T23:59:59Z\"\n    }\n  },\n  \"network\": {\n    \"type\": \"4G\",\n    \"provider_code\": \"SE01\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/normalize/rest",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "normalize", "rest"]
+        },
+        "description": "Normalizes REST JSON data from user data usage system into Telgea's internal format"
+      },
+      "response": []
+    },
+    {
+      "name": "SOAP - Error Case (Missing UserID)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"xml\": \"<soapenv:Envelope xmlns:soapenv=\\\"http://schemas.xmlsoap.org/soap/envelope/\\\" xmlns:sms=\\\"http://provider.com/sms\\\">\\n   <soapenv:Header/>\\n   <soapenv:Body>\\n      <sms:ChargeSMS>\\n         <sms:PhoneNumber>+46701234567</sms:PhoneNumber>\\n         <sms:MessageID>msg789</sms:MessageID>\\n         <sms:Timestamp>2025-04-01T12:30:00Z</sms:Timestamp>\\n         <sms:ChargeAmount>0.05</sms:ChargeAmount>\\n         <sms:Currency>EUR</sms:Currency>\\n      </sms:ChargeSMS>\\n   </soapenv:Body>\\n</soapenv:Envelope>\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/normalize/soap",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "normalize", "soap"]
+        },
+        "description": "Test error handling - SOAP data missing required UserID field"
+      },
+      "response": []
+    },
+    {
+      "name": "REST - Error Case (Missing MSISDN)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": \"abc123\",\n  \"usage\": {\n    \"data\": {\n      \"total_mb\": 845.23,\n      \"roaming_mb\": 210.50,\n      \"country\": \"SE\"\n    },\n    \"period\": {\n      \"start\": \"2025-04-01T00:00:00Z\",\n      \"end\": \"2025-04-30T23:59:59Z\"\n    }\n  },\n  \"network\": {\n    \"type\": \"4G\",\n    \"provider_code\": \"SE01\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/normalize/rest",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "normalize", "rest"]
+        },
+        "description": "Test error handling - REST data missing required msisdn field"
+      },
+      "response": []
+    },
+    {
+      "name": "SOAP - No XML Body",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/normalize/soap",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "normalize", "soap"]
+        },
+        "description": "Test error handling - No XML string provided in request body"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ]
+}

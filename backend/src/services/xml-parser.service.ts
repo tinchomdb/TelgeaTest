@@ -36,12 +36,41 @@ export class XMLParserService {
         throw new Error("Missing soapenv:Body in SOAP response");
       }
 
-      const chargeSMS = body["sms:ChargeSMS"] as SOAPChargeSMS;
-      if (!chargeSMS) {
+      const chargeSMSRaw = body["sms:ChargeSMS"] as RawData;
+      if (!chargeSMSRaw) {
         throw new Error("Missing sms:ChargeSMS in SOAP response body");
       }
 
-      return chargeSMS;
+      // Extract and validate required fields
+      const requiredFields = {
+        UserID: chargeSMSRaw["sms:UserID"],
+        PhoneNumber: chargeSMSRaw["sms:PhoneNumber"],
+        MessageID: chargeSMSRaw["sms:MessageID"],
+        Timestamp: chargeSMSRaw["sms:Timestamp"],
+        ChargeAmount: chargeSMSRaw["sms:ChargeAmount"],
+        Currency: chargeSMSRaw["sms:Currency"],
+      };
+
+      // Validate all required fields are present
+      for (const [fieldName, fieldValue] of Object.entries(requiredFields)) {
+        if (
+          fieldValue === undefined ||
+          fieldValue === null ||
+          fieldValue === ""
+        ) {
+          throw new Error(`Missing required field: ${fieldName}`);
+        }
+      }
+
+      // Return typed object with validated data
+      return {
+        UserID: requiredFields.UserID as string,
+        PhoneNumber: String(requiredFields.PhoneNumber),
+        MessageID: requiredFields.MessageID as string,
+        Timestamp: requiredFields.Timestamp as string,
+        ChargeAmount: requiredFields.ChargeAmount as string | number,
+        Currency: requiredFields.Currency as string,
+      };
     } catch (error) {
       throw new Error(
         `Failed to parse SOAP XML: ${
