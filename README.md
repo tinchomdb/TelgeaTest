@@ -2,13 +2,32 @@
 
 This project implements MVNO (Mobile Virtual Network Operator) data normalization from SOAP XML and REST JSON formats into Telgea's internal format. A Node.js backend API and an Angular 20 frontend application.
 
-The requirements contained some ambiguity that warranted clarification. In a real life scenario I would have asked for clarification, but in the current environment I had to apply a mix of an educated guess of the intended requirements (considering is a test and not production code) and what I consider good practices.
+The requirements contained some ambiguity that warranted clarification. In a real life scenario I would have asked for clarification, but in the current environment I had to apply a mix of an educated guess of the intended requirements (considering it is a test and not production code) and what I consider good practices.
+
+---
+
+## 📑 Table of Contents
+
+- [Requirements Analysis](#requirements-analysis)
+  - [The Integration Ambiguity](#the-integration-ambiguity)
+  - [Why This Approach?](#why-this-approach)
+- [Solution Architecture](#solution-architecture)
+  - [Recommended Production Architecture](#recommended-production-architecture)
+  - [Current Implementation: Two Independent Apps](#current-implementation-two-independent-apps)
+  - [Input Validation vs. Output Validation](#input-validation-vs-output-validation)
+  - [No UI Comparison Feature](#no-ui-comparison-feature)
+- [Quick Start](#quick-start)
+  - [Prerequisites](#prerequisites)
+  - [Backend Setup](#backend-setup)
+  - [Frontend Setup](#frontend-setup)
+- [License & Usage](#license--usage)
+- [Final Notes](#final-notes)
 
 ---
 
 ## Requirements Analysis
 
-### The Ambiguity
+### The Integration Ambiguity
 
 The original requirements presented conflicting signals about the integration between the backend and frontend:
 
@@ -29,7 +48,7 @@ The original requirements presented conflicting signals about the integration be
 
 Requirement: "Your task is to create a **simple Angular app** that takes the data you produced in the backend test (SOAP XML and REST JSON), normalizes it to Telgea’s internal format, validates it, and displays the result"
 
-This statement is very confusing and ambiguous
+**This statement is very confusing and ambiguous**
 
 - "Takes the data you produced" suggest the backend output should feed the frontend. But the "produced" data is not the SOAP XML and REST JSON. It would be the internal normalized data.
 - Why would the frontend normalize something that is already normalized from the backend?
@@ -56,57 +75,6 @@ Should the Angular app **call the backend API**, or have independent normalizati
 
 | A) 2 overlapping implementations | API | UI | No integration (this is what is impemented) |
 | B) Full Stack | API | UI | Frontend calls backend | (Recommended for production)
-
----
-
-### Input Validation vs. Output Validation
-
-From the requirements "Your task is to create a simple Angular app that takes the data you produced in the backend test (SOAP XML and REST JSON), **normalizes it to Telgea’s internal format, validates it,** and displays the result."
-
-Maybe it's just a detail in the order of the actions, but I need to challenge having the validation **after** the normalization.
-
-**Decision:** Validate inputs (SOAP/REST), not normalized outputs
-
-**Rationale:**
-
-- External data is untrusted → validate at boundary
-- Normalization is deterministic → bugs are code issues, not runtime validation
-- Output validation belongs in **tests**, not production code
-- If output is wrong, fix the normalizer, don't validate it in the visualizer
-
-**See [mvno-normalizer-fe/README.md § Design Decisions](./mvno-normalizer-fe/README.md#key-design-decisions) for detailed analysis.**
-
----
-
-### Mock Scenarios WITHOUT Output Comparison
-
-**Original requirement (ambiguous):**
-
-"Compare your output to a provided internal_expected.json and highlight mismatches"
-
-Again, we fall into validating outputs. I couldn't find a purpose for the visual comparison of produced output against expected output. The way I consider best, and how I implemented the tool, would not provide any output if the input is invalid.
-
-**Interpretation A:** Runtime UI comparison tool
-
-- ❌ Circular logic (comparing output to what we expect from our own code)
-- ❌ User can't fix code bugs
-
-**Interpretation B:** Test suite with expected outputs
-
-- ✅ Proper place for output validation (development time)
-- ✅ 15 test cases comparing actual vs. expected
-- ✅ Catches regressions during development
-
-**My implementation:**
-
-- Comparing in automated tests
-- Mock loader with 10+ scenarios (better UX than comparison UI)
-
----
-
-### What I Implemented
-
-**I chose to implement TWO complete, independent solutions:**
 
 #### **Backend** (`/backend`)
 
@@ -147,6 +115,8 @@ Tried to cover all evaluation criteria
 - Angular (Frontend implementation)
 - SOAP/REST handling (Both implementations)
 - Architecture & Structure (Clean separation in both)
+
+---
 
 ---
 
@@ -204,6 +174,65 @@ Backend (Node.js)                 Frontend (Angular)
 
 ---
 
+---
+
+### Input Validation vs. Output Validation
+
+From the requirements "Your task is to create a simple Angular app that takes the data you produced in the backend test (SOAP XML and REST JSON), **normalizes it to Telgea's internal format, validates it,** and displays the result."
+
+Maybe it's just a detail in the order of the actions, but I need to challenge having the validation **after** the normalization.
+
+**Decision:** Parsers validate **input data** before normalization, we don't validate in runtime the normalized output.
+
+**Rationale:**
+
+- Validation errors come from **external data** (SOAP XML, REST JSON)
+- External data is untrusted → validate at boundary
+- Once parsed and validated, normalization is a pure transformation
+- Normalization is deterministic → bugs are code issues, not runtime validation
+- If normalized output is wrong, that's a **code bug**, not a validation concern
+- Output validation belongs in **automated tests**, not production code
+
+**Implementation:**
+
+- `XmlParserService.parseSOAPCharge()` - validates required SOAP fields
+- `RestParserService.validateRESTDataUsage()` - validates REST structure
+- `ValidationService` - provides reusable format validators (MSISDN, non-empty strings, etc.)
+
+---
+
+---
+
+### No UI Comparison Feature
+
+**Requirement (ambiguous):**
+
+"Compare your output to a provided internal_expected.json and highlight mismatches"
+
+**Interpretation:**
+This requirement appears to suggest implementing runtime validation of the **normalized output** against expected results in the UI. We consciously chose **not** to implement this as a UI feature.
+
+Again, we fall into validating outputs. I couldn't find a purpose for the visual comparison of produced output against expected output. The way I consider best, and how I implemented the tool, would not provide any output if the input is invalid.
+
+**Decision:**
+This requirement is satisfied by automated tests (`normalizer.service.spec.ts`), not runtime output validation in the UI.
+
+**Why Output Validation is an Anti-Pattern:**
+
+Validating normalized output at runtime is not ideal as I explained previously
+
+**If the Requirement Meant Something Else:**
+
+Perhaps it intended "provide test cases that compare output to expected results" - which we do via Jest tests. If it truly meant a UI comparison tool, we'd need clarification on:
+
+- Why would we want to normalize invalid inputs, and in consequence display invalid outputs?
+- What problem does it solve? (Manual testing is inferior to automated tests)
+- What should happen when output doesn't match? (Users can't fix code bugs)
+
+---
+
+---
+
 ## Quick Start
 
 ### Prerequisites
@@ -247,6 +276,8 @@ curl -X POST http://localhost:3000/api/normalize/soap `
 
 ---
 
+---
+
 ### Frontend Setup
 
 ```powershell
@@ -276,9 +307,13 @@ npm start
 
 ---
 
+---
+
 ## License & Usage
 
 This is a technical assessment project. Code is provided for evaluation purposes.
+
+---
 
 ---
 
