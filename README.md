@@ -16,11 +16,6 @@ The requirements contained some ambiguity that warranted clarification. In a rea
   - [Current Implementation: Two Independent Apps](#current-implementation-two-independent-apps)
   - [Input Validation vs. Output Validation](#input-validation-vs-output-validation)
   - [No UI Comparison Feature](#no-ui-comparison-feature)
-- [Quick Start](#quick-start)
-  - [Prerequisites](#prerequisites)
-  - [Backend Setup](#backend-setup)
-  - [Frontend Setup](#frontend-setup)
-- [License & Usage](#license--usage)
 - [Final Notes](#final-notes)
 
 ---
@@ -71,10 +66,9 @@ Should the Angular app **call the backend API**, or have independent normalizati
 
 **Without clarification, there are 2 valid interpretations:**
 
-| Interpretation | Backend | Frontend | Integration |
+A- 2 overlapping implementations: API and UI without integration (this is what is impemented)
 
-| A) 2 overlapping implementations | API | UI | No integration (this is what is impemented) |
-| B) Full Stack | API | UI | Frontend calls backend | (Recommended for production)
+B- Full Stack API and Frontend that calls backend (Recommended for production)
 
 #### **Backend** (`/backend`)
 
@@ -107,70 +101,16 @@ Should the Angular app **call the backend API**, or have independent normalizati
 I tried to follow my interpretation of the requirements, while it made sense considering this is a test and not production code
 
 My recommendation for production code would be to have the frontend sending the inputs and getting a response from an API.
-(Although this would make a lot of the frontend test requirements invalid - no normalization in frontend)
+(But this would make a lot of the frontend test requirements invalid - no normalization in frontend)
 
-Tried to cover all evaluation criteria
+I Tried to cover all evaluation criteria
 
 - Node.js (Backend implementation)
 - Angular (Frontend implementation)
 - SOAP/REST handling (Both implementations)
 - Architecture & Structure (Clean separation in both)
 
----
-
----
-
-## Solution Architecture
-
-### Recommended Production Architecture
-
-**My recommendation: Backend normalization with frontend UI**
-
-```
-┌─────────────────┐
-│  MVNO Provider  │
-│   SOAP/REST     │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────────────────────┐
-│   Backend API (Node.js)         │
-│  ┌──────────────────────────┐   │
-│  │  Normalization Service   │   │
-│  │  - SOAP Parser           │   │
-│  │  - REST Parser           │   │
-│  │  - Validator             │   │
-│  └──────────────────────────┘   │
-│           │                     │
-│           ▼                     │
-│  ┌──────────────────────────┐   │
-│  │ Telgea Internal Format   │   │
-│  └──────────────────────────┘   │
-└────────┬────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────┐
-│   Frontend (Angular)            │
-│  - Display normalized data      │
-│  - Error visualization          │
-│  - Monitoring/reporting         │
-└─────────────────────────────────┘
-```
-
-### Current Implementation: Two Independent Apps
-
-For this assessment, both apps have **independent normalization logic**:
-
-```
-Backend (Node.js)                 Frontend (Angular)
-┌──────────────────┐             ┌──────────────────┐
-│ NormalizerService│             │ NormalizerService│
-│ XMLParserService │             │ XmlParserService │
-│ RESTParserService│             │ RestParserService│
-└──────────────────┘             └──────────────────┘
-```
-
-**Trade-off:** Logic duplication vs. following test requirements
+**Trade-off:** Logic duplication, not ideal pattern vs. following test requirements
 
 ---
 
@@ -180,7 +120,7 @@ Backend (Node.js)                 Frontend (Angular)
 
 From the requirements "Your task is to create a simple Angular app that takes the data you produced in the backend test (SOAP XML and REST JSON), **normalizes it to Telgea's internal format, validates it,** and displays the result."
 
-Maybe it's just a detail in the order of the actions, but I need to challenge having the validation **after** the normalization.
+Maybe it's just a detail in the order of the actions, but I need to challenge the idea of having the validation **after** the normalization.
 
 **Decision:** Parsers validate **input data** before normalization, we don't validate in runtime the normalized output.
 
@@ -205,113 +145,24 @@ Maybe it's just a detail in the order of the actions, but I need to challenge ha
 
 ### No UI Comparison Feature
 
-**Requirement (ambiguous):**
+**Requirement (unclear rationale):**
 
 "Compare your output to a provided internal_expected.json and highlight mismatches"
 
 **Interpretation:**
-This requirement appears to suggest implementing runtime validation of the **normalized output** against expected results in the UI. We consciously chose **not** to implement this as a UI feature.
+This requirement suggests implementing runtime validation of the **normalized output** against expected results in the UI.
 
-Again, we fall into validating outputs. I couldn't find a purpose for the visual comparison of produced output against expected output. The way I consider best, and how I implemented the tool, would not provide any output if the input is invalid.
+However, this doesn't align with best practices. Visual comparison of normalized output against expected output serves no practical purpose in production—if input is invalid, no output should be produced. Runtime output validation is an anti-pattern; such comparisons belong in automated tests, not production code.
 
 **Decision:**
-This requirement is satisfied by automated tests (`normalizer.service.spec.ts`), not runtime output validation in the UI.
-
-**Why Output Validation is an Anti-Pattern:**
-
-Validating normalized output at runtime is not ideal as I explained previously
+This requirement is satisfied by automated tests (`normalizer.service.spec.ts` with test cases covering valid and invalid scenarios), not as a UI feature. I consciously chose **not** to implement runtime output comparison in the interface.
 
 **If the Requirement Meant Something Else:**
 
-Perhaps it intended "provide test cases that compare output to expected results" - which we do via Jest tests. If it truly meant a UI comparison tool, we'd need clarification on:
+If it truly meant a UI comparison tool, we'd need clarification on:
 
 - Why would we want to normalize invalid inputs, and in consequence display invalid outputs?
 - What problem does it solve? (Manual testing is inferior to automated tests)
-- What should happen when output doesn't match? (Users can't fix code bugs)
-
----
-
----
-
-## Quick Start
-
-### Prerequisites
-
-- **Node.js** 18+ and npm 9+
-- Terminal access (PowerShell/Bash/etc.)
-
-### Backend Setup
-
-```powershell
-# Navigate to backend
-cd backend
-
-# Install dependencies
-npm install
-
-# Run tests
-npm test
-
-# Start development server (http://localhost:3000)
-npm run dev
-
-# Or build and start production
-npm run build
-npm start
-```
-
-**Test the API:**
-
-```powershell
-# Health check
-curl http://localhost:3000/health
-
-# Normalize SOAP (use PowerShell or Postman)
-curl -X POST http://localhost:3000/api/normalize/soap `
-  -H "Content-Type: application/json" `
-  -d '{"xml": "<soapenv:Envelope>...</soapenv:Envelope>"}'
-```
-
-**See [backend/README.md](./backend/README.md) for full API documentation.**
-
----
-
----
-
-### Frontend Setup
-
-```powershell
-# Navigate to frontend
-cd mvno-normalizer-fe
-
-# Install dependencies
-npm install
-
-# Run tests
-npm test
-
-# Start development server (http://localhost:4200)
-npm start
-```
-
-**Using the app:**
-
-1. Open `http://localhost:4200`
-2. Select SOAP or REST input type
-3. Click "Load Mock" for example data
-4. Click "Normalize" to see output
-5. Try different mock scenarios (valid/invalid data)
-6. Download normalized JSON if needed
-
-**See [mvno-normalizer-fe/README.md](./mvno-normalizer-fe/README.md) for detailed usage and design decisions.**
-
----
-
----
-
-## License & Usage
-
-This is a technical assessment project. Code is provided for evaluation purposes.
 
 ---
 
