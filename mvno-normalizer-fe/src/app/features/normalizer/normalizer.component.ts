@@ -86,9 +86,8 @@ export class NormalizerComponent {
   }
 
   private normalizeREST(input: string): TelgeaInternalFormat {
-    const parsedJson = JSON.parse(input);
-    const validatedRest = this.restParserService.validateRESTDataUsage(parsedJson);
-    return this.normalizerService.normalizeRESTDataUsage(validatedRest);
+    const parsedRest = this.restParserService.parseRESTDataUsage(input);
+    return this.normalizerService.normalizeRESTDataUsage(parsedRest);
   }
 
   onDownload(): void {

@@ -70,8 +70,9 @@ describe('NormalizerService Integration Tests', () => {
 
   describe('REST Normalization', () => {
     it('should correctly normalize valid REST JSON', () => {
-      const validatedRest = restParserService.validateRESTDataUsage(VALID_REST_JSON);
-      const normalized = normalizerService.normalizeRESTDataUsage(validatedRest);
+      const validRestString = JSON.stringify(VALID_REST_JSON);
+      const parsedRest = restParserService.parseRESTDataUsage(validRestString);
+      const normalized = normalizerService.normalizeRESTDataUsage(parsedRest);
 
       expect(normalized).toEqual(EXPECTED_REST_NORMALIZED);
     });
@@ -80,7 +81,7 @@ describe('NormalizerService Integration Tests', () => {
       const invalidJson = { ...VALID_REST_JSON };
       delete (invalidJson as any).user_id;
 
-      expect(() => restParserService.validateRESTDataUsage(invalidJson)).toThrow(
+      expect(() => restParserService.parseRESTDataUsage(JSON.stringify(invalidJson))).toThrow(
         VALIDATION_ERRORS.REST_MISSING_USER_ID
       );
     });
@@ -89,7 +90,7 @@ describe('NormalizerService Integration Tests', () => {
       const invalidJson = { ...VALID_REST_JSON };
       delete (invalidJson as any).msisdn;
 
-      expect(() => restParserService.validateRESTDataUsage(invalidJson)).toThrow(
+      expect(() => restParserService.parseRESTDataUsage(JSON.stringify(invalidJson))).toThrow(
         VALIDATION_ERRORS.REST_MISSING_MSISDN
       );
     });
@@ -97,7 +98,7 @@ describe('NormalizerService Integration Tests', () => {
     it('should throw error when user_id is empty string', () => {
       const invalidJson = { ...VALID_REST_JSON, user_id: '' };
 
-      expect(() => restParserService.validateRESTDataUsage(invalidJson)).toThrow(
+      expect(() => restParserService.parseRESTDataUsage(JSON.stringify(invalidJson))).toThrow(
         VALIDATION_ERRORS.REST_MISSING_USER_ID
       );
     });
@@ -106,7 +107,7 @@ describe('NormalizerService Integration Tests', () => {
       const invalidJson = { ...VALID_REST_JSON };
       delete (invalidJson as any).usage;
 
-      expect(() => restParserService.validateRESTDataUsage(invalidJson)).toThrow(
+      expect(() => restParserService.parseRESTDataUsage(JSON.stringify(invalidJson))).toThrow(
         VALIDATION_ERRORS.REST_MISSING_USAGE
       );
     });
@@ -115,27 +116,31 @@ describe('NormalizerService Integration Tests', () => {
       const invalidJson = { ...VALID_REST_JSON };
       delete (invalidJson as any).network;
 
-      expect(() => restParserService.validateRESTDataUsage(invalidJson)).toThrow(
+      expect(() => restParserService.parseRESTDataUsage(JSON.stringify(invalidJson))).toThrow(
         VALIDATION_ERRORS.REST_MISSING_NETWORK
       );
     });
 
-    it('should throw error when data is not an object', () => {
-      const invalidJson = 'not an object';
+    it('should throw error when JSON is invalid', () => {
+      expect(() => restParserService.parseRESTDataUsage('invalid json')).toThrow(
+        'Invalid JSON format'
+      );
+    });
 
-      expect(() => restParserService.validateRESTDataUsage(invalidJson)).toThrow(
+    it('should throw error when data is not an object', () => {
+      expect(() => restParserService.parseRESTDataUsage('"not an object"')).toThrow(
         VALIDATION_ERRORS.REST_INVALID_OBJECT
       );
     });
 
     it('should throw error when data is null', () => {
-      expect(() => restParserService.validateRESTDataUsage(null)).toThrow(
+      expect(() => restParserService.parseRESTDataUsage('null')).toThrow(
         VALIDATION_ERRORS.REST_INVALID_OBJECT
       );
     });
 
     it('should throw error when data is an array', () => {
-      expect(() => restParserService.validateRESTDataUsage([])).toThrow(
+      expect(() => restParserService.parseRESTDataUsage('[]')).toThrow(
         VALIDATION_ERRORS.REST_INVALID_OBJECT
       );
     });

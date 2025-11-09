@@ -6,12 +6,12 @@ import { RawData } from "../types/common.types";
  */
 export class RESTParserService {
   /**
-   * Validate REST JSON response structure
+   * Parse and validate REST JSON response structure
    * @param data Raw data from HTTP request body
    * @returns Validated MVNO REST response
    * @throws Error if data structure is invalid
    */
-  validateRESTDataUsage(data: RawData): MVNORESTDataResponse {
+  parseRESTDataUsage(data: RawData): MVNORESTDataResponse {
     if (!this.isValidRESTDataResponse(data)) {
       throw new Error(
         "Invalid REST response structure: missing required fields"

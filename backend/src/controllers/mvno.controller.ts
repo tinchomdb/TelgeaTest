@@ -43,7 +43,7 @@ class MVNOController {
     try {
       const data = req.body;
 
-      const restData = this.restParser.validateRESTDataUsage(data);
+      const restData = this.restParser.parseRESTDataUsage(data);
 
       const normalized = this.normalizer.normalizeRESTDataUsage(restData);
 

@@ -9,7 +9,14 @@ import { VALIDATION_ERRORS } from '../constants/validation-errors';
 export class RestParserService {
   private validator = inject(ValidationService);
 
-  validateRESTDataUsage(data: unknown): MVNORestResponse {
+  parseRESTDataUsage(jsonString: string): MVNORestResponse {
+    let data: unknown;
+    try {
+      data = JSON.parse(jsonString);
+    } catch (error) {
+      throw new Error('Invalid JSON format');
+    }
+
     if (!this.isObject(data)) {
       throw new Error(VALIDATION_ERRORS.REST_INVALID_OBJECT);
     }
