@@ -44,7 +44,7 @@ This application demonstrates:
 
 **Requirement (ambiguous):**
 
-> "Compare your output to a provided internal_expected.json and highlight mismatches"
+"Compare your output to a provided internal_expected.json and highlight mismatches"
 
 **Interpretation:**
 This requirement appears to suggest implementing runtime validation of the **normalized output** against expected results in the UI. We consciously chose **not** to implement this as a UI feature.
