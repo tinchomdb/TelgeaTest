@@ -25,14 +25,3 @@ export interface BillingPeriod {
   start: string;
   end: string;
 }
-
-export interface ValidationError {
-  field: string;
-  message: string;
-  severity: 'error' | 'warning';
-}
-
-export interface ValidationResult {
-  isValid: boolean;
-  errors: ValidationError[];
-}

@@ -1,0 +1,19 @@
+{
+  "user_id": "USER456",
+  "msisdn": "",
+  "usage": {
+    "data": {
+      "total_mb": 2500,
+      "roaming_mb": 150,
+      "country": "ES"
+    },
+    "period": {
+      "start": "2025-11-01",
+      "end": "2025-11-30"
+    }
+  },
+  "network": {
+    "type": "4G",
+    "provider_code": "TEL-ES"
+  }
+}

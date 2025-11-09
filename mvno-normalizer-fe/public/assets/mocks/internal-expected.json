@@ -1,0 +1,15 @@
+{
+  "telgea_user_id": "USER456",
+  "msisdn": "34987654321",
+  "usage_data": {
+    "total_mb": 2500,
+    "roaming_mb": 150,
+    "country": "ES",
+    "network_type": "4G",
+    "provider_code": "TEL-ES"
+  },
+  "billing_period": {
+    "start": "2025-11-01",
+    "end": "2025-11-30"
+  }
+}

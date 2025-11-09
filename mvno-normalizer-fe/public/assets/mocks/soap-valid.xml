@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sms="http://example.com/sms">
+  <soapenv:Body>
+    <sms:ChargeSMS>
+      <UserID>USER123</UserID>
+      <PhoneNumber>34912345678</PhoneNumber>
+      <MessageID>MSG-001</MessageID>
+      <ChargeAmount>0.15</ChargeAmount>
+      <Currency>EUR</Currency>
+      <Timestamp>2025-11-06T15:30:45Z</Timestamp>
+    </sms:ChargeSMS>
+  </soapenv:Body>
+</soapenv:Envelope>

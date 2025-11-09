@@ -1,0 +1,8 @@
+{
+  "user_id": "USER456",
+  "msisdn": "34987654321",
+  "usage": {
+    "data_usage": 2500,
+    "timestamp": "2025-11-06T15:30:45Z"
+  }
+}

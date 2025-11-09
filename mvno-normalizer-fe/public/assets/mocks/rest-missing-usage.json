@@ -1,0 +1,8 @@
+{
+  "user_id": "USER456",
+  "msisdn": "34987654321",
+  "network": {
+    "type": "4G",
+    "provider_code": "TEL-ES"
+  }
+}

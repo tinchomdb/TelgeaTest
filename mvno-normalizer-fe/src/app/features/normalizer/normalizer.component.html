@@ -1,0 +1,73 @@
+<div class="normalizer-container">
+  <h1>MVNO Data Normalizer</h1>
+  <p class="subtitle">Transform SOAP XML or REST JSON to Telgea's internal format</p>
+
+  <div class="input-panel">
+    <div class="panel-header">
+      <h2>Input Data</h2>
+      <div class="input-type-toggle">
+        <label>
+          <input
+            type="radio"
+            name="inputType"
+            value="SOAP"
+            [checked]="inputType() === 'SOAP'"
+            (change)="onTypeChange('SOAP')"
+          />
+          SOAP XML
+        </label>
+        <label>
+          <input
+            type="radio"
+            name="inputType"
+            value="REST"
+            [checked]="inputType() === 'REST'"
+            (change)="onTypeChange('REST')"
+          />
+          REST JSON
+        </label>
+      </div>
+    </div>
+
+    <textarea
+      class="input-textarea"
+      placeholder="Paste your {{ inputType() }} data here..."
+      [value]="inputData()"
+      (input)="onInputChange($event)"
+      rows="15"
+    ></textarea>
+
+    <div class="mock-controls">
+      <label for="mockScenario">Mock Scenario:</label>
+      <select
+        id="mockScenario"
+        class="mock-dropdown"
+        [value]="selectedMockScenario()"
+        (change)="onMockScenarioChange($event)"
+      >
+        @for (scenario of mockScenarios; track scenario.value) {
+        <option [value]="scenario.value">{{ scenario.label }} - {{ scenario.description }}</option>
+        }
+      </select>
+      <button class="btn btn-secondary" (click)="onLoadMock()">Load Mock</button>
+    </div>
+
+    <div class="button-group">
+      <button class="btn btn-primary" (click)="onNormalize()">Normalize</button>
+      <button class="btn btn-secondary" (click)="onClear()">Clear</button>
+    </div>
+  </div>
+
+  @if (errorMessage()) {
+  <div class="error-message"><strong>Error:</strong> {{ errorMessage() }}</div>
+  } @if (normalizedData()) {
+  <div class="output-panel">
+    <div class="panel-header">
+      <h2>Normalized Data</h2>
+      <button class="btn btn-download" (click)="onDownload()">⬇ Download JSON</button>
+    </div>
+
+    <pre class="output-json">{{ normalizedData() | json }}</pre>
+  </div>
+  }
+</div>

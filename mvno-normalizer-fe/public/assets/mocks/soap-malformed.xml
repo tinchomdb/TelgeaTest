@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sms="http://example.com/sms">
+  <soapenv:Body>
+    <sms:ChargeSMS>
+      <UserID>USER123</UserID>
+      <PhoneNumber>34912345678
+      <MessageID>MSG-005</MessageID>
