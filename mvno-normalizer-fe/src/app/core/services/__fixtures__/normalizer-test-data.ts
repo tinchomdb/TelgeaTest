@@ -1,128 +1,172 @@
-export const VALID_SOAP_XML = `
-  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sms="http://provider.com/sms">
-    <soapenv:Header/>
-    <soapenv:Body>
-      <sms:ChargeSMS>
-        <sms:UserID>abc123</sms:UserID>
-        <sms:PhoneNumber>+46701234567</sms:PhoneNumber>
-        <sms:MessageID>msg789</sms:MessageID>
-        <sms:Timestamp>2025-04-01T12:30:00Z</sms:Timestamp>
-        <sms:ChargeAmount>0.05</sms:ChargeAmount>
-        <sms:Currency>EUR</sms:Currency>
-      </sms:ChargeSMS>
-    </soapenv:Body>
-  </soapenv:Envelope>
-`;
+/**
+ * Test data for Normalizer Service tests
+ * Contains mock parsed data and expected normalized results for integration and unit tests
+ */
 
-export const SOAP_XML_MISSING_USER_ID = `
-  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sms="http://provider.com/sms">
-    <soapenv:Body>
-      <sms:ChargeSMS>
-        <sms:PhoneNumber>+46701234567</sms:PhoneNumber>
-        <sms:MessageID>msg789</sms:MessageID>
-        <sms:Timestamp>2025-04-01T12:30:00Z</sms:Timestamp>
-        <sms:ChargeAmount>0.05</sms:ChargeAmount>
-        <sms:Currency>EUR</sms:Currency>
-      </sms:ChargeSMS>
-    </soapenv:Body>
-  </soapenv:Envelope>
-`;
+import { MVNORestResponse } from '../../models/mvno-rest.dto';
+import { ParsedSoapData } from '../../models/mvno-soap.dto';
+import {
+  TEST_USER_ID,
+  TEST_PHONE_WITH_PLUS,
+  TEST_MESSAGE_ID,
+  TEST_TIMESTAMP,
+  TEST_AMOUNTS,
+  TEST_CURRENCY,
+  TEST_DATA_MB,
+  TEST_DATA_MB_SMALL,
+  TEST_DATA_MB_LARGE,
+  TEST_ROAMING_MB,
+  TEST_INTEGRATION_ROAMING_MB,
+  TEST_COUNTRY,
+  TEST_PERIOD,
+  TEST_NETWORK_TYPE,
+  TEST_PROVIDER_CODE,
+} from './test-constants';
 
-export const SOAP_XML_MISSING_PHONE = `
-  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sms="http://provider.com/sms">
-    <soapenv:Body>
-      <sms:ChargeSMS>
-        <sms:UserID>abc123</sms:UserID>
-        <sms:MessageID>msg789</sms:MessageID>
-        <sms:Timestamp>2025-04-01T12:30:00Z</sms:Timestamp>
-        <sms:ChargeAmount>0.05</sms:ChargeAmount>
-        <sms:Currency>EUR</sms:Currency>
-      </sms:ChargeSMS>
-    </soapenv:Body>
-  </soapenv:Envelope>
-`;
+// =============================================================================
+// INTEGRATION TEST DATA - For normalizer.integration.spec.ts
+// =============================================================================
 
-export const SOAP_XML_INVALID_AMOUNT = `
-  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sms="http://provider.com/sms">
-    <soapenv:Body>
-      <sms:ChargeSMS>
-        <sms:UserID>abc123</sms:UserID>
-        <sms:PhoneNumber>+46701234567</sms:PhoneNumber>
-        <sms:MessageID>msg789</sms:MessageID>
-        <sms:Timestamp>2025-04-01T12:30:00Z</sms:Timestamp>
-        <sms:ChargeAmount>invalid</sms:ChargeAmount>
-        <sms:Currency>EUR</sms:Currency>
-      </sms:ChargeSMS>
-    </soapenv:Body>
-  </soapenv:Envelope>
-`;
-
-export const SOAP_XML_NEGATIVE_AMOUNT = `
-  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sms="http://provider.com/sms">
-    <soapenv:Body>
-      <sms:ChargeSMS>
-        <sms:UserID>abc123</sms:UserID>
-        <sms:PhoneNumber>+46701234567</sms:PhoneNumber>
-        <sms:MessageID>msg789</sms:MessageID>
-        <sms:Timestamp>2025-04-01T12:30:00Z</sms:Timestamp>
-        <sms:ChargeAmount>-0.05</sms:ChargeAmount>
-        <sms:Currency>EUR</sms:Currency>
-      </sms:ChargeSMS>
-    </soapenv:Body>
-  </soapenv:Envelope>
-`;
-
-export const SOAP_XML_MALFORMED = '<invalid>xml</notclosed>';
-
-export const VALID_REST_JSON = {
-  user_id: 'abc123',
-  msisdn: '+46701234567',
+// Base REST JSON for integration tests
+const INTEGRATION_REST_BASE = {
+  user_id: TEST_USER_ID,
+  msisdn: TEST_PHONE_WITH_PLUS,
   usage: {
     data: {
-      total_mb: 845.23,
-      roaming_mb: 210.5,
-      country: 'SE',
+      total_mb: TEST_DATA_MB,
+      roaming_mb: TEST_INTEGRATION_ROAMING_MB,
+      country: TEST_COUNTRY,
     },
-    period: {
-      start: '2025-04-01T00:00:00Z',
-      end: '2025-04-30T23:59:59Z',
-    },
+    period: TEST_PERIOD,
   },
   network: {
-    type: '4G',
-    provider_code: 'SE01',
+    type: TEST_NETWORK_TYPE,
+    provider_code: TEST_PROVIDER_CODE,
   },
 };
 
+export const VALID_REST_JSON = INTEGRATION_REST_BASE;
+
 export const EXPECTED_SOAP_NORMALIZED = {
-  telgea_user_id: 'abc123',
-  msisdn: '+46701234567',
+  telgea_user_id: TEST_USER_ID,
+  msisdn: TEST_PHONE_WITH_PLUS,
   sms_charges: [
     {
-      message_id: 'msg789',
-      timestamp: '2025-04-01T12:30:00Z',
-      amount: 0.05,
-      currency: 'EUR',
+      message_id: TEST_MESSAGE_ID,
+      timestamp: TEST_TIMESTAMP,
+      amount: TEST_AMOUNTS.POSITIVE,
+      currency: TEST_CURRENCY,
     },
   ],
   billing_period: {
-    start: '2025-04-01T12:30:00Z',
-    end: '2025-04-01T12:30:00Z',
+    start: TEST_TIMESTAMP,
+    end: TEST_TIMESTAMP,
   },
 };
 
 export const EXPECTED_REST_NORMALIZED = {
-  telgea_user_id: 'abc123',
-  msisdn: '+46701234567',
+  telgea_user_id: INTEGRATION_REST_BASE.user_id,
+  msisdn: INTEGRATION_REST_BASE.msisdn,
   usage_data: {
-    total_mb: 845.23,
-    roaming_mb: 210.5,
-    country: 'SE',
-    network_type: '4G',
-    provider_code: 'SE01',
+    total_mb: INTEGRATION_REST_BASE.usage.data.total_mb,
+    roaming_mb: INTEGRATION_REST_BASE.usage.data.roaming_mb,
+    country: INTEGRATION_REST_BASE.usage.data.country,
+    network_type: INTEGRATION_REST_BASE.network.type,
+    provider_code: INTEGRATION_REST_BASE.network.provider_code,
   },
   billing_period: {
-    start: '2025-04-01T00:00:00Z',
-    end: '2025-04-30T23:59:59Z',
+    start: INTEGRATION_REST_BASE.usage.period.start,
+    end: INTEGRATION_REST_BASE.usage.period.end,
+  },
+};
+
+// =============================================================================
+// UNIT TEST MOCKS - For normalizer.service.spec.ts unit tests
+// =============================================================================
+
+// Base SOAP parsed data - single source for all SOAP tests
+export const MOCK_PARSED_SOAP_BASIC: ParsedSoapData = {
+  userId: TEST_USER_ID,
+  phoneNumber: TEST_PHONE_WITH_PLUS,
+  messageId: TEST_MESSAGE_ID,
+  timestamp: TEST_TIMESTAMP,
+  chargeAmount: TEST_AMOUNTS.POSITIVE,
+  currency: TEST_CURRENCY,
+};
+
+// Base REST response data - single source for all REST tests
+export const MOCK_REST_RESPONSE_BASIC: MVNORestResponse = {
+  user_id: TEST_USER_ID,
+  msisdn: TEST_PHONE_WITH_PLUS,
+  usage: {
+    data: {
+      total_mb: TEST_DATA_MB,
+      roaming_mb: TEST_ROAMING_MB,
+      country: TEST_COUNTRY,
+    },
+    period: TEST_PERIOD,
+  },
+  network: {
+    type: TEST_NETWORK_TYPE,
+    provider_code: TEST_PROVIDER_CODE,
+  },
+};
+
+// Expected normalized usage_data shape (commonly used in unit test assertions)
+export const EXPECTED_USAGE_DATA = {
+  total_mb: TEST_DATA_MB,
+  roaming_mb: TEST_ROAMING_MB,
+  country: TEST_COUNTRY,
+  network_type: TEST_NETWORK_TYPE,
+  provider_code: TEST_PROVIDER_CODE,
+} as const;
+
+// REST response with UK provider and large data usage
+export const MOCK_REST_UK_LARGE_DATA: MVNORestResponse = {
+  user_id: TEST_USER_ID,
+  msisdn: TEST_PHONE_WITH_PLUS,
+  usage: {
+    data: {
+      total_mb: TEST_DATA_MB_LARGE,
+    },
+    period: TEST_PERIOD,
+  },
+  network: {
+    type: TEST_NETWORK_TYPE,
+    provider_code: TEST_PROVIDER_CODE,
+  },
+};
+
+// REST response with minimal data (only total_mb, no roaming/country)
+export const MOCK_REST_MINIMAL_DATA: MVNORestResponse = {
+  user_id: TEST_USER_ID,
+  msisdn: TEST_PHONE_WITH_PLUS,
+  usage: {
+    data: {
+      total_mb: TEST_DATA_MB_SMALL,
+    },
+    period: TEST_PERIOD,
+  },
+  network: {
+    type: TEST_NETWORK_TYPE,
+    provider_code: TEST_PROVIDER_CODE,
+  },
+};
+
+// REST response with complete Sweden data (SE country + SE provider)
+export const MOCK_REST_SWEDEN_COMPLETE: MVNORestResponse = {
+  user_id: TEST_USER_ID,
+  msisdn: TEST_PHONE_WITH_PLUS,
+  usage: {
+    data: {
+      total_mb: TEST_DATA_MB,
+      roaming_mb: TEST_ROAMING_MB,
+      country: TEST_COUNTRY,
+    },
+    period: TEST_PERIOD,
+  },
+  network: {
+    type: TEST_NETWORK_TYPE,
+    provider_code: TEST_PROVIDER_CODE,
   },
 };

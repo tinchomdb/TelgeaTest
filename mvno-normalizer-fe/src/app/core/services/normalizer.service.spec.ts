@@ -1,148 +1,127 @@
 import { TestBed } from '@angular/core/testing';
 import { NormalizerService } from './normalizer.service';
-import { XmlParserService } from './xml-parser.service';
-import { RestParserService } from './rest-parser.service';
-import { VALIDATION_ERRORS } from '../constants/validation-errors';
 import {
-  VALID_SOAP_XML,
-  SOAP_XML_MISSING_USER_ID,
-  SOAP_XML_MISSING_PHONE,
-  SOAP_XML_INVALID_AMOUNT,
-  SOAP_XML_NEGATIVE_AMOUNT,
-  SOAP_XML_MALFORMED,
-  VALID_REST_JSON,
-  EXPECTED_SOAP_NORMALIZED,
-  EXPECTED_REST_NORMALIZED,
+  MOCK_PARSED_SOAP_BASIC,
+  MOCK_REST_RESPONSE_BASIC,
+  MOCK_REST_UK_LARGE_DATA,
+  MOCK_REST_MINIMAL_DATA,
+  MOCK_REST_SWEDEN_COMPLETE,
+  EXPECTED_USAGE_DATA,
 } from './__fixtures__/normalizer-test-data';
+import {
+  TEST_USER_ID,
+  TEST_PHONE_WITH_PLUS,
+  TEST_MESSAGE_ID,
+  TEST_TIMESTAMP,
+  TEST_AMOUNTS,
+  TEST_CURRENCY,
+  TEST_DATA_MB,
+  TEST_DATA_MB_SMALL,
+  TEST_DATA_MB_LARGE,
+  TEST_ROAMING_MB,
+  TEST_COUNTRY,
+  TEST_PERIOD,
+  TEST_NETWORK_TYPE,
+  TEST_PROVIDER_CODE,
+} from './__fixtures__/test-constants';
 
-describe('NormalizerService Integration Tests', () => {
-  let normalizerService: NormalizerService;
-  let xmlParserService: XmlParserService;
-  let restParserService: RestParserService;
+describe('NormalizerService', () => {
+  let service: NormalizerService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [NormalizerService, XmlParserService, RestParserService],
+      providers: [NormalizerService],
     });
-    normalizerService = TestBed.inject(NormalizerService);
-    xmlParserService = TestBed.inject(XmlParserService);
-    restParserService = TestBed.inject(RestParserService);
+    service = TestBed.inject(NormalizerService);
   });
 
-  describe('SOAP Normalization', () => {
-    it('should correctly normalize valid SOAP XML', () => {
-      const parsedSoap = xmlParserService.parseSOAPCharge(VALID_SOAP_XML);
-      const normalized = normalizerService.normalizeSOAPChargeSMS(parsedSoap);
+  it('should be created', () => {
+    expect(service).toBeTruthy();
+  });
 
-      expect(normalized).toEqual(EXPECTED_SOAP_NORMALIZED);
+  describe('normalizeSOAPChargeSMS', () => {
+    it('should transform SOAP parsed data to internal format', () => {
+      const result = service.normalizeSOAPChargeSMS(MOCK_PARSED_SOAP_BASIC);
+
+      expect(result.telgea_user_id).toBe(TEST_USER_ID);
+      expect(result.msisdn).toBe(TEST_PHONE_WITH_PLUS);
+      expect(result.sms_charges).toHaveLength(1);
+      expect(result.sms_charges![0]).toEqual({
+        message_id: TEST_MESSAGE_ID,
+        timestamp: TEST_TIMESTAMP,
+        amount: TEST_AMOUNTS.POSITIVE,
+        currency: TEST_CURRENCY,
+      });
+      expect(result.billing_period.start).toBe(TEST_TIMESTAMP);
+      expect(result.billing_period.end).toBe(TEST_TIMESTAMP);
     });
 
-    it('should throw error when UserID is missing', () => {
-      expect(() => xmlParserService.parseSOAPCharge(SOAP_XML_MISSING_USER_ID)).toThrow(
-        VALIDATION_ERRORS.SOAP_MISSING_USER_ID
-      );
+    it('should handle different currencies', () => {
+      const result = service.normalizeSOAPChargeSMS({
+        ...MOCK_PARSED_SOAP_BASIC,
+        currency: TEST_CURRENCY,
+      });
+
+      expect(result.sms_charges![0].currency).toBe(TEST_CURRENCY);
+      expect(result.sms_charges![0].amount).toBe(TEST_AMOUNTS.POSITIVE);
     });
 
-    it('should throw error when PhoneNumber is missing', () => {
-      expect(() => xmlParserService.parseSOAPCharge(SOAP_XML_MISSING_PHONE)).toThrow(
-        VALIDATION_ERRORS.SOAP_MISSING_PHONE
-      );
+    it('should handle zero amount charges', () => {
+      const result = service.normalizeSOAPChargeSMS({
+        ...MOCK_PARSED_SOAP_BASIC,
+        chargeAmount: TEST_AMOUNTS.ZERO,
+      });
+
+      expect(result.sms_charges![0].amount).toBe(TEST_AMOUNTS.ZERO);
     });
 
-    it('should throw error when ChargeAmount is invalid', () => {
-      expect(() => xmlParserService.parseSOAPCharge(SOAP_XML_INVALID_AMOUNT)).toThrow(
-        VALIDATION_ERRORS.SOAP_INVALID_AMOUNT_FORMAT
-      );
-    });
+    it('should use timestamp for both start and end of billing period', () => {
+      const result = service.normalizeSOAPChargeSMS({
+        ...MOCK_PARSED_SOAP_BASIC,
+        timestamp: TEST_TIMESTAMP,
+      });
 
-    it('should throw error when ChargeAmount is negative', () => {
-      expect(() => xmlParserService.parseSOAPCharge(SOAP_XML_NEGATIVE_AMOUNT)).toThrow(
-        VALIDATION_ERRORS.SOAP_NEGATIVE_AMOUNT
-      );
-    });
-
-    it('should throw error when XML is malformed', () => {
-      expect(() => xmlParserService.parseSOAPCharge(SOAP_XML_MALFORMED)).toThrow(
-        VALIDATION_ERRORS.SOAP_INVALID_XML
-      );
+      expect(result.billing_period.start).toBe(TEST_TIMESTAMP);
+      expect(result.billing_period.end).toBe(TEST_TIMESTAMP);
     });
   });
 
-  describe('REST Normalization', () => {
-    it('should correctly normalize valid REST JSON', () => {
-      const validRestString = JSON.stringify(VALID_REST_JSON);
-      const parsedRest = restParserService.parseRESTDataUsage(validRestString);
-      const normalized = normalizerService.normalizeRESTDataUsage(parsedRest);
+  describe('normalizeRESTDataUsage', () => {
+    it('should transform REST parsed data to internal format', () => {
+      const result = service.normalizeRESTDataUsage(MOCK_REST_RESPONSE_BASIC);
 
-      expect(normalized).toEqual(EXPECTED_REST_NORMALIZED);
+      expect(result.telgea_user_id).toBe(TEST_USER_ID);
+      expect(result.msisdn).toBe(TEST_PHONE_WITH_PLUS);
+      expect(result.usage_data).toEqual(EXPECTED_USAGE_DATA);
+      expect(result.billing_period).toEqual(TEST_PERIOD);
     });
 
-    it('should throw error when user_id is missing', () => {
-      const invalidJson = { ...VALID_REST_JSON };
-      delete (invalidJson as any).user_id;
+    it('should merge network info into usage_data', () => {
+      const result = service.normalizeRESTDataUsage(MOCK_REST_UK_LARGE_DATA);
 
-      expect(() => restParserService.parseRESTDataUsage(JSON.stringify(invalidJson))).toThrow(
-        VALIDATION_ERRORS.REST_MISSING_USER_ID
-      );
+      expect(result.usage_data!.network_type).toBe(TEST_NETWORK_TYPE);
+      expect(result.usage_data!.provider_code).toBe(TEST_PROVIDER_CODE);
+      expect(result.usage_data!.total_mb).toBe(TEST_DATA_MB_LARGE);
     });
 
-    it('should throw error when msisdn is missing', () => {
-      const invalidJson = { ...VALID_REST_JSON };
-      delete (invalidJson as any).msisdn;
+    it('should handle optional roaming data', () => {
+      const result = service.normalizeRESTDataUsage(MOCK_REST_MINIMAL_DATA);
 
-      expect(() => restParserService.parseRESTDataUsage(JSON.stringify(invalidJson))).toThrow(
-        VALIDATION_ERRORS.REST_MISSING_MSISDN
-      );
+      expect(result.usage_data!.total_mb).toBe(TEST_DATA_MB_SMALL);
+      expect(result.usage_data!.roaming_mb).toBeUndefined();
+      expect(result.usage_data!.country).toBeUndefined();
     });
 
-    it('should throw error when user_id is empty string', () => {
-      const invalidJson = { ...VALID_REST_JSON, user_id: '' };
+    it('should preserve all optional usage data fields', () => {
+      const result = service.normalizeRESTDataUsage(MOCK_REST_SWEDEN_COMPLETE);
 
-      expect(() => restParserService.parseRESTDataUsage(JSON.stringify(invalidJson))).toThrow(
-        VALIDATION_ERRORS.REST_MISSING_USER_ID
-      );
+      expect(result.usage_data).toEqual(EXPECTED_USAGE_DATA);
     });
 
-    it('should throw error when usage is missing', () => {
-      const invalidJson = { ...VALID_REST_JSON };
-      delete (invalidJson as any).usage;
+    it('should not include sms_charges in REST normalization', () => {
+      const result = service.normalizeRESTDataUsage(MOCK_REST_RESPONSE_BASIC);
 
-      expect(() => restParserService.parseRESTDataUsage(JSON.stringify(invalidJson))).toThrow(
-        VALIDATION_ERRORS.REST_MISSING_USAGE
-      );
-    });
-
-    it('should throw error when network is missing', () => {
-      const invalidJson = { ...VALID_REST_JSON };
-      delete (invalidJson as any).network;
-
-      expect(() => restParserService.parseRESTDataUsage(JSON.stringify(invalidJson))).toThrow(
-        VALIDATION_ERRORS.REST_MISSING_NETWORK
-      );
-    });
-
-    it('should throw error when JSON is invalid', () => {
-      expect(() => restParserService.parseRESTDataUsage('invalid json')).toThrow(
-        'Invalid JSON format'
-      );
-    });
-
-    it('should throw error when data is not an object', () => {
-      expect(() => restParserService.parseRESTDataUsage('"not an object"')).toThrow(
-        VALIDATION_ERRORS.REST_INVALID_OBJECT
-      );
-    });
-
-    it('should throw error when data is null', () => {
-      expect(() => restParserService.parseRESTDataUsage('null')).toThrow(
-        VALIDATION_ERRORS.REST_INVALID_OBJECT
-      );
-    });
-
-    it('should throw error when data is an array', () => {
-      expect(() => restParserService.parseRESTDataUsage('[]')).toThrow(
-        VALIDATION_ERRORS.REST_INVALID_OBJECT
-      );
+      expect(result.sms_charges).toBeUndefined();
     });
   });
 });

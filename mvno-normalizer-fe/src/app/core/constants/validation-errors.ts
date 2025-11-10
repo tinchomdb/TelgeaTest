@@ -1,5 +1,6 @@
 export const VALIDATION_ERRORS = {
   // REST validation errors
+  REST_INVALID_JSON: 'Invalid JSON format',
   REST_INVALID_OBJECT: 'Invalid REST response: data must be an object',
   REST_MISSING_USER_ID: 'Missing or invalid required field: user_id',
   REST_MISSING_MSISDN: 'Missing or invalid required field: msisdn',

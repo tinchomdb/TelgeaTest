@@ -14,7 +14,7 @@ export class RestParserService {
     try {
       data = JSON.parse(jsonString);
     } catch (error) {
-      throw new Error('Invalid JSON format');
+      throw new Error(VALIDATION_ERRORS.REST_INVALID_JSON);
     }
 
     if (!this.isObject(data)) {
