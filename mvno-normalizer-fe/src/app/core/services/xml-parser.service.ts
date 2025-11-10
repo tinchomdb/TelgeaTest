@@ -38,10 +38,11 @@ export class XmlParserService {
     if (!this.validator.isNonEmptyString(currency))
       throw new Error(VALIDATION_ERRORS.SOAP_MISSING_CURRENCY);
 
-    const chargeAmount = parseFloat(chargeAmountStr!);
-    if (isNaN(chargeAmount)) {
+    if (!this.validator.isValidNumber(chargeAmountStr)) {
       throw new Error(VALIDATION_ERRORS.SOAP_INVALID_AMOUNT_FORMAT);
     }
+
+    const chargeAmount = parseFloat(chargeAmountStr!);
 
     if (!this.validator.isNonNegative(chargeAmount)) {
       throw new Error(VALIDATION_ERRORS.SOAP_NEGATIVE_AMOUNT);
