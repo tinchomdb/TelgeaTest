@@ -6,8 +6,9 @@ import { NormalizerService } from '../../core/services/normalizer.service';
 import { FileDownloadService } from '../../core/services/file-download.service';
 import {
   MockLoaderService,
-  MockScenario,
-  MockScenarioOption,
+  SoapScenario,
+  RestScenario,
+  ScenarioOption,
 } from '../../core/services/mock-loader.service';
 import { TelgeaInternalFormat } from '../../core/models/telgea-internal.model';
 
@@ -33,9 +34,9 @@ export class NormalizerComponent {
   readonly inputType = signal<InputType>('REST');
   readonly normalizedData = signal<TelgeaInternalFormat | null>(null);
   readonly errorMessage = signal<string>('');
-  readonly selectedMockScenario = signal<MockScenario>('valid');
+  readonly selectedMockScenario = signal<SoapScenario | RestScenario>('valid');
 
-  get mockScenarios(): MockScenarioOption[] {
+  get mockScenarios(): ScenarioOption[] {
     return this.inputType() === 'SOAP'
       ? this.mockLoaderService.soapScenarios
       : this.mockLoaderService.restScenarios;
@@ -53,7 +54,7 @@ export class NormalizerComponent {
 
   onMockScenarioChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
-    this.selectedMockScenario.set(target.value as MockScenario);
+    this.selectedMockScenario.set(target.value as SoapScenario | RestScenario);
   }
 
   onNormalize(): void {
@@ -109,8 +110,8 @@ export class NormalizerComponent {
     const scenario = this.selectedMockScenario();
     const loader$ =
       this.inputType() === 'SOAP'
-        ? this.mockLoaderService.loadSoapMock(scenario)
-        : this.mockLoaderService.loadRestMock(scenario);
+        ? this.mockLoaderService.loadSoapMock(scenario as SoapScenario)
+        : this.mockLoaderService.loadRestMock(scenario as RestScenario);
 
     loader$.subscribe({
       next: (data) => {
