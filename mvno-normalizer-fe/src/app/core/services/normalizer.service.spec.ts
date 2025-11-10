@@ -50,7 +50,7 @@ describe('NormalizerService', () => {
       expect(result.billing_period.end).toBe(TEST_TIMESTAMP);
     });
 
-    it('should handle different currencies', () => {
+    it('should have correct currency', () => {
       const result = service.normalizeSOAPChargeSMS({
         ...MOCK_PARSED_SOAP_BASIC,
         currency: TEST_CURRENCY,

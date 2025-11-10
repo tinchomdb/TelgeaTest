@@ -2,18 +2,24 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-export type MockScenario =
+// SOAP scenarios that have corresponding XML files
+export type SoapScenario =
   | 'valid'
   | 'missing-userid'
   | 'missing-phone'
-  | 'missing-usage'
   | 'invalid-amount'
-  | 'invalid-structure'
-  | 'empty-msisdn'
   | 'malformed';
 
-export interface MockScenarioOption {
-  value: MockScenario;
+// REST scenarios that have corresponding JSON files
+export type RestScenario =
+  | 'valid'
+  | 'missing-userid'
+  | 'missing-usage'
+  | 'invalid-structure'
+  | 'empty-msisdn';
+
+export interface ScenarioOption {
+  value: SoapScenario | RestScenario;
   label: string;
   description: string;
 }
@@ -23,8 +29,9 @@ export interface MockScenarioOption {
 })
 export class MockLoaderService {
   private http = inject(HttpClient);
+  private readonly MOCK_BASE_PATH = '/assets/mocks';
 
-  readonly soapScenarios: MockScenarioOption[] = [
+  readonly soapScenarios: ScenarioOption[] = [
     { value: 'valid', label: 'Valid', description: 'Complete valid SOAP charge' },
     { value: 'missing-userid', label: 'Missing UserID', description: 'UserID field not present' },
     {
@@ -36,7 +43,7 @@ export class MockLoaderService {
     { value: 'malformed', label: 'Malformed XML', description: 'Invalid XML structure' },
   ];
 
-  readonly restScenarios: MockScenarioOption[] = [
+  readonly restScenarios: ScenarioOption[] = [
     { value: 'valid', label: 'Valid', description: 'Complete valid REST usage data' },
     { value: 'missing-userid', label: 'Missing UserID', description: 'user_id field not present' },
     { value: 'missing-usage', label: 'Missing Usage', description: 'usage object not present' },
@@ -48,15 +55,11 @@ export class MockLoaderService {
     { value: 'empty-msisdn', label: 'Empty MSISDN', description: 'MSISDN is empty string' },
   ];
 
-  loadSoapMock(scenario: MockScenario): Observable<string> {
-    return this.http.get(`/assets/mocks/soap-${scenario}.xml`, { responseType: 'text' });
+  loadSoapMock(scenario: SoapScenario): Observable<string> {
+    return this.http.get(`${this.MOCK_BASE_PATH}/soap-${scenario}.xml`, { responseType: 'text' });
   }
 
-  loadRestMock(scenario: MockScenario): Observable<string> {
-    return this.http.get(`/assets/mocks/rest-${scenario}.json`, { responseType: 'text' });
-  }
-
-  loadExpectedOutput(): Observable<string> {
-    return this.http.get('/assets/mocks/internal-expected.json', { responseType: 'text' });
+  loadRestMock(scenario: RestScenario): Observable<string> {
+    return this.http.get(`${this.MOCK_BASE_PATH}/rest-${scenario}.json`, { responseType: 'text' });
   }
 }
