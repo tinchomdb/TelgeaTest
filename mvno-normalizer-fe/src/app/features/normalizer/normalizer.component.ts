@@ -30,34 +30,40 @@ export class NormalizerComponent {
   private fileDownloadService = inject(FileDownloadService);
   private mockLoaderService = inject(MockLoaderService);
 
-  readonly inputData = signal<string>('');
-  readonly inputType = signal<InputType>('REST');
-  readonly normalizedData = signal<TelgeaInternalFormat | null>(null);
-  readonly errorMessage = signal<string>('');
-  readonly selectedMockScenario = signal<SoapScenario | RestScenario>('valid');
+  protected readonly inputData = signal<string>('');
+  protected readonly inputType = signal<InputType>('REST');
+  protected readonly normalizedData = signal<TelgeaInternalFormat | null>(null);
+  protected readonly errorMessage = signal<string>('');
+  protected readonly selectedMockScenario = signal<SoapScenario | RestScenario | ''>('');
 
-  get mockScenarios(): ScenarioOption[] {
+  protected get mockScenarios(): ScenarioOption[] {
     return this.inputType() === 'SOAP'
       ? this.mockLoaderService.soapScenarios
       : this.mockLoaderService.restScenarios;
   }
 
-  onInputChange(event: Event): void {
+  protected onInputChange(event: Event): void {
     const target = event.target as HTMLTextAreaElement;
     this.inputData.set(target.value);
   }
 
-  onTypeChange(type: InputType): void {
-    this.inputType.set(type);
-    this.selectedMockScenario.set('valid');
+  protected onTypeChange(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.inputType.set(target.value as InputType);
+    this.selectedMockScenario.set('');
   }
 
-  onMockScenarioChange(event: Event): void {
+  protected onMockScenarioChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
-    this.selectedMockScenario.set(target.value as SoapScenario | RestScenario);
+    const scenario = target.value as SoapScenario | RestScenario | '';
+    this.selectedMockScenario.set(scenario);
+
+    if (scenario) {
+      this.loadMockData(scenario as SoapScenario | RestScenario);
+    }
   }
 
-  onNormalize(): void {
+  protected onNormalize(): void {
     this.resetState();
 
     const input = this.inputData().trim();
@@ -76,22 +82,7 @@ export class NormalizerComponent {
     }
   }
 
-  private resetState(): void {
-    this.errorMessage.set('');
-    this.normalizedData.set(null);
-  }
-
-  private normalizeSOAP(input: string): TelgeaInternalFormat {
-    const parsedSoap = this.xmlParserService.parseSOAPCharge(input);
-    return this.normalizerService.normalizeSOAPChargeSMS(parsedSoap);
-  }
-
-  private normalizeREST(input: string): TelgeaInternalFormat {
-    const parsedRest = this.restParserService.parseRESTDataUsage(input);
-    return this.normalizerService.normalizeRESTDataUsage(parsedRest);
-  }
-
-  onDownload(): void {
+  protected onDownload(): void {
     const data = this.normalizedData();
     if (!data) return;
 
@@ -99,15 +90,15 @@ export class NormalizerComponent {
     this.fileDownloadService.downloadJson(data, filename);
   }
 
-  onClear(): void {
+  protected onClear(): void {
     this.inputData.set('');
+    this.selectedMockScenario.set('');
     this.resetState();
   }
 
-  onLoadMock(): void {
+  private loadMockData(scenario: SoapScenario | RestScenario): void {
     this.resetState();
 
-    const scenario = this.selectedMockScenario();
     const loader$ =
       this.inputType() === 'SOAP'
         ? this.mockLoaderService.loadSoapMock(scenario as SoapScenario)
@@ -121,5 +112,20 @@ export class NormalizerComponent {
         this.errorMessage.set(`Failed to load mock data: ${error.message}`);
       },
     });
+  }
+
+  private resetState(): void {
+    this.errorMessage.set('');
+    this.normalizedData.set(null);
+  }
+
+  private normalizeSOAP(input: string): TelgeaInternalFormat {
+    const parsedSoap = this.xmlParserService.parseSOAPCharge(input);
+    return this.normalizerService.normalizeSOAPChargeSMS(parsedSoap);
+  }
+
+  private normalizeREST(input: string): TelgeaInternalFormat {
+    const parsedRest = this.restParserService.parseRESTDataUsage(input);
+    return this.normalizerService.normalizeRESTDataUsage(parsedRest);
   }
 }

@@ -12,7 +12,7 @@
             name="inputType"
             value="SOAP"
             [checked]="inputType() === 'SOAP'"
-            (change)="onTypeChange('SOAP')"
+            (change)="onTypeChange($event)"
           />
           SOAP XML
         </label>
@@ -22,7 +22,7 @@
             name="inputType"
             value="REST"
             [checked]="inputType() === 'REST'"
-            (change)="onTypeChange('REST')"
+            (change)="onTypeChange($event)"
           />
           REST JSON
         </label>
@@ -45,11 +45,11 @@
         [value]="selectedMockScenario()"
         (change)="onMockScenarioChange($event)"
       >
+        <option value="">-- Select a mock scenario --</option>
         @for (scenario of mockScenarios; track scenario.value) {
-        <option [value]="scenario.value">{{ scenario.label }} - {{ scenario.description }}</option>
+        <option [value]="scenario.value">{{ scenario.label }}</option>
         }
       </select>
-      <button class="btn btn-secondary" (click)="onLoadMock()">Load Mock</button>
     </div>
 
     <div class="button-group">
