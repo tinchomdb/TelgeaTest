@@ -28,16 +28,11 @@ export const TEST_NETWORK_TYPE = '4G';
 // Provider code
 export const TEST_PROVIDER_CODE = 'PROVIDER1';
 
-// Data usage values
+// Data usage value
 export const TEST_DATA_MB = 500.5;
-export const TEST_DATA_MB_SMALL = 250;
-export const TEST_DATA_MB_LARGE = 1000;
 
 // Roaming data
 export const TEST_ROAMING_MB = 100.25;
-
-// Integration test roaming value (different from unit test)
-export const TEST_INTEGRATION_ROAMING_MB = 210.5;
 
 // Country code
 export const TEST_COUNTRY = 'US';

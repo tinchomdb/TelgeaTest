@@ -140,8 +140,3 @@ export const XML_PARSER_EMPTY_USER_ID = buildSoapXml({
   ...VALID_FIELDS,
   userId: '   ',
 });
-
-export const XML_PARSER_DECIMAL_AMOUNT = buildSoapXml({
-  ...VALID_FIELDS,
-  chargeAmount: `${TEST_AMOUNTS.POSITIVE}`,
-});

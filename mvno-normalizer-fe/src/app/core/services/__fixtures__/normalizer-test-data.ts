@@ -13,10 +13,7 @@ import {
   TEST_AMOUNTS,
   TEST_CURRENCY,
   TEST_DATA_MB,
-  TEST_DATA_MB_SMALL,
-  TEST_DATA_MB_LARGE,
   TEST_ROAMING_MB,
-  TEST_INTEGRATION_ROAMING_MB,
   TEST_COUNTRY,
   TEST_PERIOD,
   TEST_NETWORK_TYPE,
@@ -34,7 +31,7 @@ const INTEGRATION_REST_BASE = {
   usage: {
     data: {
       total_mb: TEST_DATA_MB,
-      roaming_mb: TEST_INTEGRATION_ROAMING_MB,
+      roaming_mb: TEST_ROAMING_MB,
       country: TEST_COUNTRY,
     },
     period: TEST_PERIOD,
@@ -121,47 +118,13 @@ export const EXPECTED_USAGE_DATA = {
   provider_code: TEST_PROVIDER_CODE,
 } as const;
 
-// REST response with UK provider and large data usage
-export const MOCK_REST_UK_LARGE_DATA: MVNORestResponse = {
-  user_id: TEST_USER_ID,
-  msisdn: TEST_PHONE_WITH_PLUS,
-  usage: {
-    data: {
-      total_mb: TEST_DATA_MB_LARGE,
-    },
-    period: TEST_PERIOD,
-  },
-  network: {
-    type: TEST_NETWORK_TYPE,
-    provider_code: TEST_PROVIDER_CODE,
-  },
-};
-
-// REST response with minimal data (only total_mb, no roaming/country)
+// REST response with minimal data (only total_mb, no optional roaming/country)
 export const MOCK_REST_MINIMAL_DATA: MVNORestResponse = {
   user_id: TEST_USER_ID,
   msisdn: TEST_PHONE_WITH_PLUS,
   usage: {
     data: {
-      total_mb: TEST_DATA_MB_SMALL,
-    },
-    period: TEST_PERIOD,
-  },
-  network: {
-    type: TEST_NETWORK_TYPE,
-    provider_code: TEST_PROVIDER_CODE,
-  },
-};
-
-// REST response with complete Sweden data (SE country + SE provider)
-export const MOCK_REST_SWEDEN_COMPLETE: MVNORestResponse = {
-  user_id: TEST_USER_ID,
-  msisdn: TEST_PHONE_WITH_PLUS,
-  usage: {
-    data: {
       total_mb: TEST_DATA_MB,
-      roaming_mb: TEST_ROAMING_MB,
-      country: TEST_COUNTRY,
     },
     period: TEST_PERIOD,
   },

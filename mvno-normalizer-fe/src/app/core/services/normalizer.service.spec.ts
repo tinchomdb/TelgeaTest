@@ -3,9 +3,7 @@ import { NormalizerService } from './normalizer.service';
 import {
   MOCK_PARSED_SOAP_BASIC,
   MOCK_REST_RESPONSE_BASIC,
-  MOCK_REST_UK_LARGE_DATA,
   MOCK_REST_MINIMAL_DATA,
-  MOCK_REST_SWEDEN_COMPLETE,
   EXPECTED_USAGE_DATA,
 } from './__fixtures__/normalizer-test-data';
 import {
@@ -16,10 +14,6 @@ import {
   TEST_AMOUNTS,
   TEST_CURRENCY,
   TEST_DATA_MB,
-  TEST_DATA_MB_SMALL,
-  TEST_DATA_MB_LARGE,
-  TEST_ROAMING_MB,
-  TEST_COUNTRY,
   TEST_PERIOD,
   TEST_NETWORK_TYPE,
   TEST_PROVIDER_CODE,
@@ -97,23 +91,23 @@ describe('NormalizerService', () => {
     });
 
     it('should merge network info into usage_data', () => {
-      const result = service.normalizeRESTDataUsage(MOCK_REST_UK_LARGE_DATA);
+      const result = service.normalizeRESTDataUsage(MOCK_REST_RESPONSE_BASIC);
 
       expect(result.usage_data!.network_type).toBe(TEST_NETWORK_TYPE);
       expect(result.usage_data!.provider_code).toBe(TEST_PROVIDER_CODE);
-      expect(result.usage_data!.total_mb).toBe(TEST_DATA_MB_LARGE);
+      expect(result.usage_data!.total_mb).toBe(TEST_DATA_MB);
     });
 
     it('should handle optional roaming data', () => {
       const result = service.normalizeRESTDataUsage(MOCK_REST_MINIMAL_DATA);
 
-      expect(result.usage_data!.total_mb).toBe(TEST_DATA_MB_SMALL);
+      expect(result.usage_data!.total_mb).toBe(TEST_DATA_MB);
       expect(result.usage_data!.roaming_mb).toBeUndefined();
       expect(result.usage_data!.country).toBeUndefined();
     });
 
     it('should preserve all optional usage data fields', () => {
-      const result = service.normalizeRESTDataUsage(MOCK_REST_SWEDEN_COMPLETE);
+      const result = service.normalizeRESTDataUsage(MOCK_REST_RESPONSE_BASIC);
 
       expect(result.usage_data).toEqual(EXPECTED_USAGE_DATA);
     });

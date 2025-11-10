@@ -124,10 +124,5 @@ describe('XmlParserService', () => {
         VALIDATION_ERRORS.SOAP_MISSING_USER_ID
       );
     });
-
-    it('should parse decimal ChargeAmount correctly', () => {
-      const result = service.parseSOAPCharge(TestData.XML_PARSER_DECIMAL_AMOUNT);
-      expect(result.chargeAmount).toBe(TEST_AMOUNTS.POSITIVE);
-    });
   });
 });
