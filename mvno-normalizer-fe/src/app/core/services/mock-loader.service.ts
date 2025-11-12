@@ -1,6 +1,7 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
+import { Injectable, inject, signal, computed, DestroyRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 export type InputType = 'SOAP' | 'REST';
 
@@ -31,6 +32,7 @@ export interface ScenarioOption {
 })
 export class MockLoaderService {
   private http = inject(HttpClient);
+  private destroyRef = inject(DestroyRef);
   private readonly MOCK_BASE_PATH = '/assets/mocks';
 
   private readonly soapScenarios: ScenarioOption[] = [
@@ -94,7 +96,7 @@ export class MockLoaderService {
         ? this.loadSoapMock(scenario as SoapScenario)
         : this.loadRestMock(scenario as RestScenario);
 
-    loader$.subscribe({
+    loader$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (data) => {
         this.mockData.set(data);
       },
