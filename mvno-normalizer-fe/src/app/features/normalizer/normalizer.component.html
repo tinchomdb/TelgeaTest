@@ -11,7 +11,7 @@
             type="radio"
             name="inputType"
             value="SOAP"
-            [checked]="inputType() === 'SOAP'"
+            [checked]="mockLoaderService.inputType() === 'SOAP'"
             (change)="onTypeChange($event)"
           />
           SOAP XML
@@ -21,7 +21,7 @@
             type="radio"
             name="inputType"
             value="REST"
-            [checked]="inputType() === 'REST'"
+            [checked]="mockLoaderService.inputType() === 'REST'"
             (change)="onTypeChange($event)"
           />
           REST JSON
@@ -31,7 +31,7 @@
 
     <textarea
       class="input-textarea"
-      placeholder="Paste your {{ inputType() }} data here..."
+      placeholder="Paste your {{ mockLoaderService.inputType() }} data here..."
       [value]="inputData()"
       (input)="onInputChange($event)"
       rows="15"
@@ -42,11 +42,11 @@
       <select
         id="mockScenario"
         class="mock-dropdown"
-        [value]="selectedMockScenario()"
+        [value]="mockLoaderService.selectedMockScenario()"
         (change)="onMockScenarioChange($event)"
       >
         <option value="">-- Select a mock scenario --</option>
-        @for (scenario of mockScenarios; track scenario.value) {
+        @for (scenario of mockLoaderService.mockScenarios(); track scenario.value) {
         <option [value]="scenario.value">{{ scenario.label }}</option>
         }
       </select>
